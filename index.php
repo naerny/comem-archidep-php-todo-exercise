@@ -28,8 +28,9 @@ if (isset($_POST['action'])) {
 
       $title = $_POST['title'];
       if ($title && $title !== '') {
-        $insertQuery = 'INSERT INTO todo VALUES(NULL, \'' . $title . '\', FALSE, CURRENT_TIMESTAMP)';
-        if (!$db->query($insertQuery)) {
+        $insert = $db->prepare('INSERT INTO todo VALUES(NULL, :title, FALSE, CURRENT_TIMESTAMP)');
+        $insert->bindParam('title', $title);
+        if (!$insert->execute()) {
           die(print_r($db->errorInfo(), true));
         }
       }
@@ -37,15 +38,15 @@ if (isset($_POST['action'])) {
       header('Location: ' . BASE_URL);
       die();
 
-    /**
-     * Toggle a task (i.e. if it is done, undo it; if it is not done, mark it as done),
-     * then redirect to the base URL.
-     */
+      /**
+       * Toggle a task (i.e. if it is done, undo it; if it is not done, mark it as done),
+       * then redirect to the base URL.
+       */
     case 'toggle':
 
       $id = $_POST['id'];
       if (is_numeric($id)) {
-        $updateQuery = 'UPDATE todo SET done = NOT done WHERE id = ' . $id; // IMPLEMENT ME (Tristan)
+        $updateQuery = 'UPDATE todo SET done = !done WHERE id = ' . $id; // IMPLEMENT ME (Tristan)
         if (!$db->query($updateQuery)) {
           die(print_r($db->errorInfo(), true));
         }
@@ -54,14 +55,14 @@ if (isset($_POST['action'])) {
       header('Location: ' . BASE_URL);
       die();
 
-    /**
-     * Delete a task, then redirect to the base URL.
-     */
+      /**
+       * Delete a task, then redirect to the base URL.
+       */
     case 'delete':
 
       $id = $_POST['id'];
       if (is_numeric($id)) {
-        $deleteQuery = 'DELETE FROM todo WHERE id =' . $id; // IMPLEMENT ME (Loic)
+        $deleteQuery = 'DELETE FROM todo WHERE id = ' . $id; // IMPLEMENT ME (Loic)
         if (!$db->query($deleteQuery)) {
           die(print_r($db->errorInfo(), true));
         }
@@ -78,8 +79,10 @@ if (isset($_POST['action'])) {
 /**
  * Select all tasks from the database.
  */
+
 $selectQuery = 'SELECT * FROM `todo` '; // IMPLEMENT ME (Nicolas)
 $items = $db->query($selectQuery);
+
 
 
 function dynamicURL()
@@ -97,8 +100,7 @@ function dynamicURL()
   <title>TodoList</title>
 
   <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
-    integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 
   <!-- Custom CSS -->
   <style>
@@ -143,9 +145,8 @@ function dynamicURL()
     <div class='list-group mt-3'>
 
       <!-- Todo items -->
-      <?php foreach ($items as $item): ?>
-        <div
-          class='list-group-item d-flex justify-content-between align-items-center<?php if ($item['done']): ?> list-group-item-success<?php else: ?> list-group-item-warning<?php endif; ?>'>
+      <?php foreach ($items as $item) : ?>
+        <div class='list-group-item d-flex justify-content-between align-items-center<?php if ($item['done']) : ?> list-group-item-success<?php else : ?> list-group-item-warning<?php endif; ?>'>
 
           <div class='title'>
             <?= $item['title'] ?>
@@ -182,15 +183,9 @@ function dynamicURL()
   </main>
 
   <!-- Bootstrap JavaScript & dependencies -->
-  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-    crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
-    integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
-    crossorigin="anonymous"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
-    integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
-    crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 
 </body>
 
